@@ -1,0 +1,6 @@
+PERIPHERALS += pwm
+
+VPATH += $(WACKYLIB_DIR)
+SRC += Pwm.cpp
+INCLUDES += -I$(WACKYLIB_DIR)
+

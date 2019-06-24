@@ -1,0 +1,6 @@
+PERIPHERALS += twi
+
+VPATH += $(WACKYLIB_DIR)
+SRC += Twi.cpp
+INCLUDES += -I$(WACKYLIB_DIR)
+

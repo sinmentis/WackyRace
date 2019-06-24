@@ -1,0 +1,6 @@
+PERIPHERALS += adc
+
+VPATH += $(WACKYLIB_DIR)
+SRC += Adc.cpp
+INCLUDES += -I$(WACKYLIB_DIR)
+

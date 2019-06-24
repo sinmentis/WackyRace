@@ -1,0 +1,6 @@
+PERIPHERALS += spi
+
+VPATH += $(WACKYLIB_DIR)
+SRC += Spi.cpp
+INCLUDES += -I$(WACKYLIB_DIR)
+

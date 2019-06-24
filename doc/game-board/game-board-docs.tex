@@ -1,0 +1,114 @@
+\documentclass[11pt, a4paper]{article}
+\title{Wacky Racers 2019 Game Board Documentation}
+\author{Michael Hayes, Ben Mitchell, Matthew Edwards}
+\date{Version 1, \today}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{float}
+\usepackage{todonotes}
+\presetkeys{todonotes}{inline}{}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{makecell}
+\usepackage{hyperref}
+\usepackage{tabularx}
+
+
+\begin{document}
+\maketitle
+
+\section{Executive Summary}
+You should ensure that the status LED is easily visible and identifiable on both your racer and your hat.
+You should implement the commands in the order they are given in Table~\ref{tab:board-commands}, and U, M, N, B, K and R are required for the competition.
+
+
+\section{Introduction}
+Each sub-group must assemble a game board as part of the SMT Lab induction process.
+
+The game board interfaces to each Wacky Racer and Wacky Hat using a UART interface.
+Its purpose is to communicate with a game server over WiFi for coordination of competitions.
+It controls a string of programmable LEDs used to identify each Wacky Hat and Wacky Racer.
+It also interfaces to a bump sensor that is required for entry into the capture the flag competition.
+
+\section{Functionality}
+The first LED on the LED string (that is, the LED closest to the connector) is used as a status indicator.
+Depending on the game board's state, the status LED either indicates which mode the board is in or which error has occurred.
+\textbf{You should ensure that the status LED is easily visible and identifiable on both your racer and your hat.}
+
+The game board has three modes of operation: demo mode, test mode and competition mode.
+The default mode is demo mode; this is the mode the board will enter if you do not respond (or do not respond correctly) to the startup commands.
+In demo mode, the status LED is white and the rest of the LEDs display a rainbow pattern.
+
+Your response to the M command determines whether the board enters test mode or competition mode.
+Outside of events organised by Michael or the TAs, you should use test mode.
+For your convenience, it is recommended to use a switch or jumper on your board to control this.
+In test mode, the status LED is breathing blue and the game board hosts a wireless network named after your group number and board type (e.g.,~``Wacky Racers Group 1 Racer'').
+On this network, a web interface is available at \url{http://wacky.test/} which allows you to test various aspects of your board's interaction with the game board.
+
+In competition mode, the status LED is breathing green and the game board connects to the competition wireless network.
+Your game board will be controlled remotely by the game server, allowing you to compete in the event.
+
+The other status LED colours are given in Table~\ref{tab:status-led}.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{l l}
+    White  & Demo mode (or briefly, requesting board information).  \\
+    Red    & Could not connect to competition network.  \\
+    Orange & Connecting to competition network.  \\
+    Yellow & Connecting to game server.  \\
+    Green, breathing & Competition mode.  \\
+    Blue, breathing & Test mode.  \\
+    Red, flashing quickly & Something else went wrong.  \\
+    Purple & OTA update (or update check) in progress.
+  \end{tabular}
+  \caption{Status LED colours.}
+  \label{tab:status-led}
+\end{table}
+
+
+\section{Serial Interface}
+The game board send commands over a UART interface and expects responses.
+The responses must begin within 30\,ms.
+The software interface is shown in Table~\ref{tab:board-commands}.
+The baud rate is 250000 and 8 bits are sent with no parity and 1 stop bit.
+The maximum response length is 100 bytes, except for the LED pattern which has a maximum response length of 280 bytes (40 colours, 39 commas and a newline).
+
+\textbf{You should implement the commands in the order they are given in Table~\ref{tab:board-commands}.}
+Not responding to the U, M, N and B commands will put the game board into demo mode.
+K and R are also required for the competition.
+L allows you to customize your LED strip displays at certain times; it will be sent at regular intervals so you can implement animations.
+T is only necessary if your radio link does not work, but it does allow you to control your racer from a laptop or mobile device (using the test mode interface).
+If you receive a command for which you have not implemented a response, you must discard up to the next newline character.
+
+
+\begin{table}[H]
+  \centering
+  \begin{tabularx}{\textwidth}{l X}
+    U & Return how much current (in mA) you can provide on the 5V rail (this should be lower when powered over USB).  \\
+    M & Return `comp' for competition mode and `test' for test mode. \\
+    N & Return group number. \\
+    B & Return board type (`hat' or `racer'). \\
+    K & For racer, kill motors, prepare to die!  For hat, play sound.  Return an empty string. \\
+    R & Re-enable motors.  Return an empty string. \\
+    L\texttt{x} & Return LED pattern to display on LED strip, where \texttt{x} is 0 in test mode, 1 for victory, and 2 for loss.  The LED pattern should be a `<' character, followed by 40 colour values separated by commas (where each colour value is a 6-digit RRGGBB hexadecimal number), then a `>' character.  If fewer than 40 colours are sent, the pattern will be repeated along the strip.  \\
+    G & Return group name. \\
+    S & Return student names (comma separated list). \\
+    V & Return battery voltage in mV as an integer.  \\
+    I & Return battery current in mA as an integer (racer only). \\
+    Q & Return battery charge used in mAh formatted as an integer (racer only). \\
+    T & For hat, return speed command as
+    `\texttt{linear},\texttt{angular}' where each component is an
+    integer percentage between -100 and 100 inclusive.
+    Return an empty string to use your own radio link.  \\
+    T\texttt{l},\texttt{a} & For racer, move with forward speed \texttt{l} and rotation rate \texttt{a} where the speeds are integer percentages.  Return an empty string. \\
+    Z & Return an empty string and enter low-power mode. \\
+  \end{tabularx}
+  \caption{Game board commands.  All commands and responses are
+    newline-terminated ASCII strings.}
+  \label{tab:board-commands}
+\end{table}
+
+
+\end{document}

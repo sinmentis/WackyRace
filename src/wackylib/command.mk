@@ -1,0 +1,3 @@
+VPATH += $(WACKYLIB_DIR)
+SRC += command.c
+INCLUDES += -I$(WACKYLIB_DIR)

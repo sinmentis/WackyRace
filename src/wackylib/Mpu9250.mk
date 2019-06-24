@@ -1,0 +1,4 @@
+VPATH += $(WACKYLIB_DIR)
+SRC += Mpu9250.cpp
+INCLUDES += -I$(WACKYLIB_DIR)
+include $(WACKYLIB_DIR)/Twi.mk
